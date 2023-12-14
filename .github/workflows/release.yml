@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Install dependencies
-        run: dnf install rpmspectool copr-cli rpm-build make gcc gcc-c++ libdrm-devel systemd-rpm-macros glibc-devel.x86_64 glibc-devel.i686 wget git 'dnf-command(builddep)' -y
+        run: dnf install gh rpmspectool copr-cli rpm-build make gcc gcc-c++ libdrm-devel systemd-rpm-macros glibc-devel.x86_64 glibc-devel.i686 wget git 'dnf-command(builddep)' -y
      
       - name: Build stuff
         id: ci
@@ -29,10 +29,15 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
 
       - name: Create github Release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
+          ls ./RPMS
+          ls ./SRPMS
+
           newVersion=${{ steps.ci.outputs.version }}
           artifact=$(find ./SRPMS/*.src.rpm | head -n1)
-          gh release create "$newVersion" -t "$newVersion" --repo=${{ github.repository }} --target=${{ github.sha }} $prerelease --generate-notes "$artifact"
+          gh release create "$newVersion" -t "$newVersion" --repo=${{ github.repository }} --target=${{ github.sha }} --generate-notes "$artifact"
 
       - name: Add login to copr
         run: |
