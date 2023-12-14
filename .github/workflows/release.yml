@@ -21,7 +21,10 @@ jobs:
         id: ci
         run: |
           dnf builddep -y --spec ./swaylock-effects.spec
-          spectool --define "_topdir $(pwd)" -g -R ./swaylock-effects.spec
+          version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
+          mkdir -p ./SOURCES
+          curl -Lo "v${version}.tar.gz" "https://github.com/jirutka/swaylock-effects/archive/refs/tags/v${version}.tar.gz"
+
           rpmbuild --define "_topdir $(pwd)" -bb ./swaylock-effects.spec
           version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
           echo "version=${version}" >> "$GITHUB_OUTPUT"
