@@ -1,0 +1,48 @@
+name: Create Release Assets
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:  
+  buildrpms:
+    runs-on: ubuntu-latest
+    container: 
+      image: quay.io/fedora/fedora:39
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: dnf install gh rpmspectool copr-cli rpm-build make gcc gcc-c++ libdrm-devel systemd-rpm-macros glibc-devel.x86_64 glibc-devel.i686 wget git 'dnf-command(builddep)' -y
+     
+      - name: Build stuff
+        id: ci
+        run: |
+          dnf builddep -y --spec ./swaylock-effects.spec
+          version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
+          mkdir -p ./SOURCES
+          curl -Lo "./SOURCES/v${version}.tar.gz" "https://github.com/jirutka/swaylock-effects/archive/refs/tags/v${version}.tar.gz"
+          rpmbuild --define "_topdir $(pwd)" -ba ./swaylock-effects.spec
+          version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+
+      - name: Create github Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          find . -name "*.rpm"
+
+          newVersion=${{ steps.ci.outputs.version }}
+          artifact=$(find ./RPMS -name "*.rpm" | head -n1)
+          gh release create "$newVersion" -t "$newVersion" --repo=${{ github.repository }} --target=${{ github.sha }} --generate-notes "$artifact"
+
+      - name: Add login to copr
+        run: |
+          echo "${{ secrets.COPR_CREDENTIALS }}" >> "./coprConfig"
+
+      - name: Upload to COPR
+        run: |
+          artifact=$(find "./SRPMS" -name "*.src.rpm" | head -n1)
+          copr-cli --config "./coprConfig" build swaylock-effects "$artifact"
