@@ -1,4 +1,5 @@
 %define gittag 1.7.0.0
+%global debug_package %{nil}
 
 Name:       swaylock-effects
 Version:    %{gittag} 
