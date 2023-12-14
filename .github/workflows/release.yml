@@ -35,7 +35,7 @@ jobs:
           find . -name "*.rpm"
 
           newVersion=${{ steps.ci.outputs.version }}
-          artifact=$(find ./RPMS "*.rpm" | head -n1)
+          artifact=$(find ./RPMS -name "*.rpm" | head -n1)
           gh release create "$newVersion" -t "$newVersion" --repo=${{ github.repository }} --target=${{ github.sha }} --generate-notes "$artifact"
 
       - name: Add login to copr
@@ -44,5 +44,5 @@ jobs:
 
       - name: Upload to COPR
         run: |
-          artifact=$(find "./SRPMS" "*.src.rpm" | head -n1)
+          artifact=$(find "./SRPMS" -name "*.src.rpm" | head -n1)
           copr-cli --config "./coprConfig" build swaylock-effects "$artifact"
