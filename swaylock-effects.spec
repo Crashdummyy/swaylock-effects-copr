@@ -6,7 +6,7 @@ Release:    0%{?dist}
 Summary:    Swaylock, with fancy effects
 
 License:    MIT
-Source0:    https://codeload.github.com/jirutka/swaylock-effects/tar.gz/refs/tags/v%{gittag}
+Source0:    https://github.com/jirutka/swaylock-effects/archive/refs/tags/v%{gittag}.tar.gz
 
 BuildRequires:  gcc
 BuildRequires:  meson >= 0.59.0
