@@ -23,8 +23,7 @@ jobs:
           dnf builddep -y --spec ./swaylock-effects.spec
           version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
           mkdir -p ./SOURCES
-          curl -Lo "v${version}.tar.gz" "https://github.com/jirutka/swaylock-effects/archive/refs/tags/v${version}.tar.gz"
-
+          curl -Lo "./SOURCES/v${version}.tar.gz" "https://github.com/jirutka/swaylock-effects/archive/refs/tags/v${version}.tar.gz"
           rpmbuild --define "_topdir $(pwd)" -bb ./swaylock-effects.spec
           version=$(grep "\%define gittag" swaylock-effects.spec | awk '{print $3}')
           echo "version=${version}" >> "$GITHUB_OUTPUT"
@@ -34,6 +33,7 @@ jobs:
           newVersion=${{ steps.ci.outputs.version }}
           artifact=$(find ./SRPMS/*.src.rpm | head -n1)
           gh release create "$newVersion" -t "$newVersion" --repo=${{ github.repository }} --target=${{ github.sha }} $prerelease --generate-notes "$artifact"
+
       - name: Add login to copr
         run: |
           echo "${{ secrets.COPR_CREDENTIALS }}" >> "./coprConfig"
